@@ -1,0 +1,22 @@
+[
+    {
+        "caption": "MMIX: Translate",
+        "command": "mmix_translate"
+    },
+    {
+        "caption": "MMIX: Run",
+        "command": "mmix_run"
+    },
+    {
+        "caption": "MMIX: Debug",
+        "command": "mmix_debug"
+    },
+    {
+        "caption": "MMIX: Translate and Run",
+        "command": "mmix_translate_and_run"
+    },
+    {
+        "caption": "MMIX: Translate and Debug",
+        "command": "mmix_translate_and_debug"
+    }
+]

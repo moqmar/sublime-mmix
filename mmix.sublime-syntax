@@ -1,0 +1,67 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+name: MMIX
+file_extensions:
+  - mms
+scope: source.mms
+contexts:
+  main:
+    - match: ';' # End of line or a semicolon → go back
+      scope: punctuation.terminator
+    - match: '(?<=^|;):?[0-9a-zA-Z][^ \t]*(?=[ \t]*$|[ \t])|[ \t]+(?=[A-Za-z0-9])' # Optional label with spaces → opcode
+      scope: variable.function.mms
+      push: opcode
+    - match: '.*(?=[\r\n])' # Anything else (comment)
+      scope: comment.line.mms
+  opcode:
+    - match: '$|;' # End of line or a semicolon → go back
+      scope: punctuation.terminator
+      pop: true
+    - match: '(TRAP|FCMP|FUN|FEQL|FADD|FIX|FSUB|FIXU|FLOT|FLOTU|SFLOT|SFLOTU|FMUL|FCMPE|FUNE|FEQLE|FDIV|FSQRT|FREM|FINT|MUL|MULU|DIV|DIVU|ADD|ADDU|SUB|SUBU|2ADDU|4ADDU|8ADDU|16ADDU|CMP|CMPU|NEG|NEGU|SL|SLU|SR|SRU|BN|BZ|BP|BOD|BNN|BNZ|BNP|BEV|PBN|PBZ|PBP|PBOD|PBNN|PBNZ|PBNP|PBEV|CSN|CSZ|CSP|CSOD|CSNN|CSNZ|CSNP|CSEV|ZSN|ZSZ|ZSP|ZSOD|ZSNN|ZSNZ|ZSNP|ZSEV|LDB|LDBU|LDW|LDWU|LDT|LDTU|LDO|LDOU|LDSF|LDHT|CSWAP|LDUNC|LDVTS|PRELD|PREGO|GO|STB|STBU|STW|STWU|STT|STTU|STO|STOU|STSF|STHT|STCO|STUNC|SYNCD|PREST|SYNCID|PUSHGO|OR|ORN|NOR|XOR|AND|ANDN|NAND|NXOR|BDIF|WDIF|TDIF|ODIF|MUX|SADD|MOR|MXOR|SETH|SETMH|SETML|SETL|INCH|INCMH|INCML|INCL|ORH|ORMH|ORML|ORL|ANDNH|ANDNMH|ANDNML|ANDNL|JMP|PUSHJ|GETA|PUT|POP|RESUME|SAVE|UNSAVE|SYNC|SWYM|GET|TRIP|SET|LDA|IS|LOC|PREFIX|BYTE|WYDE|TETRA|OCTA|BSPEC|ESPEC|GREG|LOCAL)(?=[ \t\r\n;]|$)'
+      scope: keyword.control.mms
+      push: operand
+    - match: '[^ \t\r\n;]+(?=[ \t\r\n;]|$)' # Wrong opcodes
+      scope: markup.deleted.mms
+      push: operand
+    - match: '[ \s]+'
+    - match: '.*(?=[\r\n])'
+      scope: comment.line.mms
+  operand:
+    - match: '(?=;)'
+      pop: true
+    - match: '[ \t]*(?![ \t\r\n]|$)'
+      scope: source.mms
+      push: operand2
+    - match: '$|;'
+      pop: true
+  operand2:
+    - match: '(?=;)'
+      pop: true
+    - match: ','
+      scope: punctuation.separator
+    - match: '[ \t]+.*$|(?=[\r\n]|$)' # Space or a line end
+      scope: comment.line.mms
+      pop: true 
+    - match: '(?=.)' # Anything that's not a space or a comma is an argument
+      push: argument
+  argument:
+    - match: '(?=;)'
+      pop: true
+    - match: '(?=[, \t\r\n])'
+      pop: true
+    - match: '[+\-~&*\/%<>|@]'
+      scope: keyword.operator
+    - match: '"[^"]+"' # Strings
+      scope: string.quoted.double
+    - match: "'.'" # Characters
+      scope: string.quoted.single
+    - match: '\$\d+' # Register
+      scope: markup.bold
+    - match: '\d+[BFH]' # Local Symbol (?!?!)
+      scope: syntax
+    - match: '#[\dA-Fa-f]+|(?:\d+(?:\.\d+)?|\.\d+)|\d+' # Number (hex, bin, dec)
+      scope: constant.numeric
+    - match: '\b(Inf|(Data|Pool|Stack)_Segment|[DVWIOUZX]_(BIT|Handler)|Std(In|Out|Err)|(Text|Binary)(Read|Write)|BinaryReadWrite|Halt|F(open|close|read|getw?s|write|putw?s|seek|tell)|ROUND_(CURRENT|OFF|UP|DOWN|NEAR)|r([BDEHJMRCNOSITKQUVGLAFPWXYZ]|BB|TT|WW|XX|YY|ZZ))\b'
+      scope: constant.language
+    # (?<=[, \t]) ... (?=[, \t])
